@@ -36,3 +36,35 @@ class Order(models.Model):
             'delivered': 'success',
             'cancelled': 'danger',
         }.get(self.status, 'secondary')
+
+    class ReturnRequest(models.Model):
+   
+
+     STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('refunded', 'Refunded'),
+    ]
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='return_requests')
+    reason = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    refund_eta = models.DateField(null=True, blank=True)
+    staff_notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Return #{self.pk} for {self.order.order_number} — {self.get_status_display()}"
+
+    def status_color(self):
+        return {
+            'pending': 'warning',
+            'approved': 'info',
+            'rejected': 'danger',
+            'refunded': 'success',
+        }.get(self.status, 'secondary')
