@@ -5,7 +5,7 @@
 
 ---
 
-## 🚀 Overview
+## Overview
 
 Northstar Retail Co.'s support team was drowning in repetitive inquiries. This lightweight, zero-dependency Django application deflects manual tickets across **all 3 primary support categories**:
 
