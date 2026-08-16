@@ -9,7 +9,7 @@
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family:'Inter',sans-serif; background:#f0f4f8; height:100vh; display:flex; flex-direction:column; }
 
-    /* NAV HEADER */
+    /* NAV */
     nav {
       background:#1d3557; color:#fff;
       padding:0 20px; height:54px;
@@ -17,14 +17,18 @@
     }
     .brand { display:flex; align-items:center; gap:8px; font-weight:700; font-size:16px; text-decoration:none; color:#fff; }
     .brand-badge { background:#e63946; border-radius:6px; padding:2px 8px; font-size:13px; }
+    .nav-links { display:flex; gap:16px; }
+    .nav-links a { color:#a8c8f0; text-decoration:none; font-size:13px; }
+    .nav-links a:hover { color:#fff; }
 
-    /* CHAT CONTAINER */
+    /* CHAT LAYOUT */
     .chat-wrap {
       flex:1; display:flex; flex-direction:column;
       max-width:800px; width:100%; margin:0 auto;
       padding:16px; gap:12px; overflow:hidden;
     }
 
+    /* CHAT WINDOW */
     #chat-window {
       flex:1; overflow-y:auto;
       background:#fff; border:1px solid #ddd; border-radius:12px;
@@ -32,7 +36,7 @@
       box-shadow:0 2px 10px rgba(0,0,0,0.03);
     }
 
-    /* BUBBLES */
+    /* MESSAGES */
     .msg { display:flex; gap:10px; align-items:flex-end; max-width:90%; }
     .msg.bot { align-self:flex-start; }
     .msg.user { align-self:flex-end; flex-direction:row-reverse; }
@@ -51,6 +55,24 @@
     .bot .bubble  { background:#f1f5f9; color:#1e293b; border-bottom-left-radius:3px; border:1px solid #e2e8f0; }
     .user .bubble { background:#1d3557; color:#fff; border-bottom-right-radius:3px; }
 
+    /* DEMO CHIPS SECTION */
+    .chip-section {
+      background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px;
+      padding:12px 14px; margin-top:8px;
+    }
+    .chip-title { font-size:12px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+    .chip-group { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+    .chip-group:last-child { margin-bottom:0; }
+    
+    .chip-btn {
+      background:#fff; border:1px solid #1d3557; color:#1d3557;
+      padding:5px 12px; border-radius:16px; font-size:12px; font-weight:600;
+      cursor:pointer; font-family:inherit; transition:all .15s;
+    }
+    .chip-btn:hover { background:#1d3557; color:#fff; transform:translateY(-1px); }
+    .chip-btn.red { border-color:#e63946; color:#e63946; }
+    .chip-btn.red:hover { background:#e63946; color:#fff; }
+
     /* INPUT BAR */
     .input-bar {
       display:flex; gap:8px; background:#fff;
@@ -67,25 +89,132 @@
       cursor:pointer; font-family:inherit; transition:background .15s;
     }
     #send-btn:hover { background:#c1121f; }
+    #send-btn:disabled { background:#ccc; cursor:not-allowed; }
+
+    /* TYPING INDICATOR */
+    .typing .bubble { color:#64748b; font-style:italic; font-size:13px; }
   </style>
 </head>
 <body>
+
 <nav>
   <a href="/" class="brand"><span class="brand-badge">★</span> Northstar Support Bot</a>
 </nav>
 
 <div class="chat-wrap">
   <div id="chat-window">
+    <!-- Welcome message -->
     <div class="msg bot">
       <div class="avatar bot-av">NS</div>
-      <div class="bubble">👋 Welcome to Northstar Support! How can I assist you today?</div>
+      <div class="bubble">👋 Welcome to Northstar Support! 
+
+Click any sample order or question below to test live deflection from our database:</div>
+    </div>
+
+    <!-- Clickable Demo Suggestions -->
+    <div class="chip-section" id="initial-chips">
+      <div class="chip-title">📦 Click to check sample orders:</div>
+      <div class="chip-group">
+        <button class="chip-btn" onclick="sendQuick('Where is order NS-1002?')">NS-1002 (Shipped)</button>
+        <button class="chip-btn" onclick="sendQuick('Where is order NS-1003?')">NS-1003 (Processing)</button>
+        <button class="chip-btn" onclick="sendQuick('Where is order NS-1001?')">NS-1001 (Delivered)</button>
+        <button class="chip-btn" onclick="sendQuick('Where is order NS-1004?')">NS-1004 (Cancelled)</button>
+      </div>
+
+      <div class="chip-title" style="margin-top:10px;">↩️ Click to check return status:</div>
+      <div class="chip-group">
+        <button class="chip-btn red" onclick="sendQuick('Refund status for NS-1001')">Return for NS-1001</button>
+        <button class="chip-btn red" onclick="sendQuick('Refund status for NS-1002')">Return for NS-1002</button>
+      </div>
+
+      <div class="chip-title" style="margin-top:10px;">🔍 Click to check live stock (English &amp; Swahili):</div>
+      <div class="chip-group">
+        <button class="chip-btn" onclick="sendQuick('kiatu iko?')">👟 kiatu iko? (Sneakers)</button>
+        <button class="chip-btn" onclick="sendQuick('Is the Hoodie in stock?')">Hoodie Stock</button>
+        <button class="chip-btn" onclick="sendQuick('Do you have Tee in stock?')">Tee Stock</button>
+      </div>
     </div>
   </div>
 
   <div class="input-bar">
-    <input id="msg-input" type="text" placeholder="Type a message..." autocomplete="off">
-    <button id="send-btn">Send</button>
+    <input id="msg-input" type="text" placeholder="Or type a question e.g. 'Where is NS-1002?'" autocomplete="off">
+    <button id="send-btn" onclick="sendMessage()">Send</button>
   </div>
 </div>
+
+<script>
+  const window_el = document.getElementById('chat-window');
+  const input = document.getElementById('msg-input');
+  const sendBtn = document.getElementById('send-btn');
+
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
+
+  function sendQuick(text) {
+    input.value = text;
+    sendMessage();
+  }
+
+  function addMessage(text, role) {
+    const isBot = role === 'bot';
+    const div = document.createElement('div');
+    div.className = `msg ${role}`;
+    div.innerHTML = `
+      <div class="avatar ${isBot ? 'bot-av' : 'user-av'}">${isBot ? 'NS' : 'You'}</div>
+      <div class="bubble">${escapeHtml(text)}</div>
+    `;
+    window_el.appendChild(div);
+    window_el.scrollTop = window_el.scrollHeight;
+    return div;
+  }
+
+  function escapeHtml(text) {
+    return text
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/\n/g,'<br>');
+  }
+
+  function addTyping() {
+    const div = document.createElement('div');
+    div.className = 'msg bot typing';
+    div.id = 'typing-indicator';
+    div.innerHTML = '<div class="avatar bot-av">NS</div><div class="bubble">Checking database…</div>';
+    window_el.appendChild(div);
+    window_el.scrollTop = window_el.scrollHeight;
+  }
+
+  function removeTyping() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  async function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.value = '';
+    sendBtn.disabled = true;
+    addMessage(text, 'user');
+    addTyping();
+
+    try {
+      const res = await fetch('/chat/api/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text }),
+      });
+      const data = await res.json();
+      removeTyping();
+      addMessage(data.reply || 'Sorry, something went wrong.', 'bot');
+    } catch (err) {
+      removeTyping();
+      addMessage('⚠️ Could not reach the server. Please try again.', 'bot');
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+</script>
 </body>
 </html>
